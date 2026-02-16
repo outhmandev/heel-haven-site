@@ -1,0 +1,68 @@
+import { useSearchParams } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { products } from '@/data/products';
+import ProductCard from '@/components/ProductCard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+export default function ShopPage() {
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category') as 'men' | 'women' | null;
+  const [category, setCategory] = useState<string>(categoryParam || 'all');
+  const [sort, setSort] = useState('default');
+
+  const filtered = useMemo(() => {
+    let result = category === 'all' ? products : products.filter(p => p.category === category);
+    if (sort === 'price-asc') result = [...result].sort((a, b) => a.price - b.price);
+    if (sort === 'price-desc') result = [...result].sort((a, b) => b.price - a.price);
+    if (sort === 'name') result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+    return result;
+  }, [category, sort]);
+
+  // Sync URL param on mount
+  useState(() => {
+    if (categoryParam && categoryParam !== category) setCategory(categoryParam);
+  });
+
+  return (
+    <div className="container py-8 space-y-6">
+      <h1 className="text-3xl font-bold">
+        {category === 'men' ? "Men's Shoes" : category === 'women' ? "Women's Shoes" : 'All Shoes'}
+      </h1>
+
+      <div className="flex flex-wrap gap-4 items-center">
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="men">Men</SelectItem>
+            <SelectItem value="women">Women</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={sort} onValueChange={setSort}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">Default</SelectItem>
+            <SelectItem value="price-asc">Price: Low to High</SelectItem>
+            <SelectItem value="price-desc">Price: High to Low</SelectItem>
+            <SelectItem value="name">Name</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <p className="text-sm text-muted-foreground ml-auto">{filtered.length} products</p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+      </div>
+
+      {filtered.length === 0 && (
+        <p className="text-center text-muted-foreground py-12">No products found.</p>
+      )}
+    </div>
+  );
+}
