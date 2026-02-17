@@ -143,7 +143,21 @@ export default function AdminPage() {
                   </Select>
                 </div>
               </div>
-              <p className="text-sm">Ship to: {order.shippingName} — {order.shippingAddress}</p>
+              <div className="text-sm space-y-1">
+                <p><strong>Customer:</strong> {order.shippingName}</p>
+                <p><strong>Phone:</strong> <a href={`tel:${order.shippingPhone}`} className="text-primary hover:underline">{order.shippingPhone}</a></p>
+                <p><strong>Address:</strong> {order.shippingAddress}</p>
+                <p>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.shippingAddress)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline text-xs flex items-center gap-1"
+                  >
+                    View Location on Map
+                  </a>
+                </p>
+              </div>
               <div className="text-sm space-y-1">
                 {order.items.map((item, i) => (
                   <p key={i}>{item.name} (Size {item.size}) × {item.quantity}</p>

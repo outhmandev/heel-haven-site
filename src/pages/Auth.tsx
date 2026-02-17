@@ -63,11 +63,8 @@ export default function AuthPage() {
         </button>
       </div>
 
-      {isLogin && (
-        <p className="text-xs text-center text-muted-foreground">
-          Admin login: admin@shoestore.com / admin123
-        </p>
-      )}
+
+
     </div>
   );
 }

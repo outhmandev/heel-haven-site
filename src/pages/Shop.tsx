@@ -1,27 +1,43 @@
 import { useSearchParams } from 'react-router-dom';
 import { useState, useMemo } from 'react';
-import { products } from '@/data/products';
+import { useQuery } from '@tanstack/react-query';
+import { fetchProducts } from '@/lib/api';
+import { Product } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ShopPage() {
-  const [searchParams] = useSearchParams();
-  const categoryParam = searchParams.get('category') as 'men' | 'women' | null;
-  const [category, setCategory] = useState<string>(categoryParam || 'all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const category = (searchParams.get('category') as 'men' | 'women' | 'all') || 'all';
   const [sort, setSort] = useState('default');
 
-  const filtered = useMemo(() => {
-    let result = category === 'all' ? products : products.filter(p => p.category === category);
-    if (sort === 'price-asc') result = [...result].sort((a, b) => a.price - b.price);
-    if (sort === 'price-desc') result = [...result].sort((a, b) => b.price - a.price);
-    if (sort === 'name') result = [...result].sort((a, b) => a.name.localeCompare(b.name));
-    return result;
-  }, [category, sort]);
-
-  // Sync URL param on mount
-  useState(() => {
-    if (categoryParam && categoryParam !== category) setCategory(categoryParam);
+  const { data: products = [], isLoading, error } = useQuery<Product[]>({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
   });
+
+  const filtered = useMemo(() => {
+    let result = category === 'all' ? products : products.filter((p: Product) => p.category === category);
+    if (sort === 'price-asc') result = [...result].sort((a: Product, b: Product) => a.price - b.price);
+    if (sort === 'price-desc') result = [...result].sort((a: Product, b: Product) => b.price - a.price);
+    if (sort === 'name') result = [...result].sort((a: Product, b: Product) => a.name.localeCompare(b.name));
+    return result;
+  }, [category, sort, products]);
+
+  const handleCategoryChange = (value: string) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      if (value === 'all') {
+        newParams.delete('category');
+      } else {
+        newParams.set('category', value);
+      }
+      return newParams;
+    });
+  };
+
+  if (isLoading) return <div className="container py-8">Loading...</div>;
+  if (error) return <div className="container py-8">Error loading products</div>;
 
   return (
     <div className="container py-8 space-y-6">
@@ -30,7 +46,7 @@ export default function ShopPage() {
       </h1>
 
       <div className="flex flex-wrap gap-4 items-center">
-        <Select value={category} onValueChange={setCategory}>
+        <Select value={category} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -57,7 +73,7 @@ export default function ShopPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+        {filtered.map((p: { id: any; }) => <ProductCard key={p.id} product={p} />)}
       </div>
 
       {filtered.length === 0 && (

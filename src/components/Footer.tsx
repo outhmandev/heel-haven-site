@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="border-t bg-muted/30 mt-auto">
       <div className="container py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
-          <h3 className="font-bold text-lg uppercase tracking-tight mb-3">ShoeStore</h3>
+          <h3 className="font-bold text-lg uppercase tracking-tight mb-3">Xstore</h3>
           <p className="text-sm text-muted-foreground">Premium footwear for men and women. Quality craftsmanship meets modern design.</p>
         </div>
         <div>
@@ -25,7 +25,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} ShoeStore. All rights reserved.
+        © {new Date().getFullYear()} XStore. All rights reserved.
       </div>
     </footer>
   );

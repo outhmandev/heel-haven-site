@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { products } from '@/data/products';
+import { useQuery } from '@tanstack/react-query';
+import { fetchProductById } from '@/lib/api';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviews } from '@/contexts/ReviewContext';
@@ -9,11 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import StarRating from '@/components/StarRating';
 import { toast } from 'sonner';
 import { ShoppingBag } from 'lucide-react';
+import { Product } from '@/data/products';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product = products.find(p => p.id === id);
   const { addItem } = useCart();
   const { user } = useAuth();
   const { getProductReviews, getAverageRating, addReview } = useReviews();
@@ -21,7 +22,14 @@ export default function ProductDetail() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
 
-  if (!product) return <div className="container py-16 text-center">Product not found.</div>;
+  const { data: product, isLoading, error } = useQuery<Product>({
+    queryKey: ['product', id],
+    queryFn: () => fetchProductById(id!),
+    enabled: !!id,
+  });
+
+  if (isLoading) return <div className="container py-16 text-center">Loading product...</div>;
+  if (error || !product) return <div className="container py-16 text-center">Product not found.</div>;
 
   const reviews = getProductReviews(product.id);
   const avgRating = getAverageRating(product.id);
@@ -67,9 +75,8 @@ export default function ProductDetail() {
                 <button
                   key={s}
                   onClick={() => setSelectedSize(s)}
-                  className={`h-10 w-12 rounded-sm border text-sm font-medium transition-colors ${
-                    selectedSize === s ? 'bg-primary text-primary-foreground border-primary' : 'hover:border-foreground'
-                  }`}
+                  className={`h-10 w-12 rounded-sm border text-sm font-medium transition-colors ${selectedSize === s ? 'bg-primary text-primary-foreground border-primary' : 'hover:border-foreground'
+                    }`}
                 >
                   {s}
                 </button>
