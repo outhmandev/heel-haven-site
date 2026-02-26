@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CartItem } from './CartContext';
+import { API_BASE_URL } from '@/lib/api';
 
 export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered';
 
@@ -31,12 +32,12 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Poll orders every 5 seconds or fetch on mount. For simplicity, fetch on mount.
     // In a real app, use React Query.
-    fetch('/api/orders').then(res => res.json()).then(data => {
+    fetch(`${API_BASE_URL}/api/orders`).then(res => res.json()).then(data => {
       if (Array.isArray(data)) setOrders(data);
     }).catch(err => console.error(err));
 
     const interval = setInterval(() => {
-      fetch('http://localhost:3000/api/orders').then(res => res.json()).then(data => {
+      fetch(`${API_BASE_URL}/api/orders`).then(res => res.json()).then(data => {
         if (Array.isArray(data)) setOrders(data);
       }).catch(e => console.error(e));
     }, 5000);
@@ -57,7 +58,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     };
 
     try {
-      await fetch('http://localhost:3000/api/orders', {
+      await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOrder)
@@ -76,7 +77,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     try {
-      await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+      await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

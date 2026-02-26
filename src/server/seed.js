@@ -5,9 +5,9 @@ require('dotenv').config();
 
 async function seed() {
     const connection = await mysql.createConnection({
-        host: process.env.DB_HOST || 'localhost',
+        host: process.env.DB_HOST || '127.0.0.1',
         user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || 'power2020',
+        password: process.env.DB_PASSWORD || 'Power2026!Secure#99',
         multipleStatements: true
     });
 

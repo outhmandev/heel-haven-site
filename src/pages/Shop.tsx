@@ -36,8 +36,16 @@ export default function ShopPage() {
     });
   };
 
-  if (isLoading) return <div className="container py-8">Loading...</div>;
-  if (error) return <div className="container py-8">Error loading products</div>;
+  if (isLoading) return <div className="container py-8">Loading... (Check console for errors)</div>;
+  if (error) return (
+    <div className="container py-8">
+      <h2 className="text-xl font-bold text-red-500">Error loading products</h2>
+      <pre className="mt-4 p-4 bg-gray-100 rounded text-sm overflow-auto">
+        {JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}
+      </pre>
+      <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-primary text-white rounded">Retry</button>
+    </div>
+  );
 
   return (
     <div className="container py-8 space-y-6">

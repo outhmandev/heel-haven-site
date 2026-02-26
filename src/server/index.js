@@ -1,13 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
+const path = require('path');
 require('dotenv').config();
+
+const sendWhatsApp = require('./whatsapp');
+const setupWebhook = require('./webhook');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Initialize Webhook Routes
+setupWebhook(app, pool);
 
 app.get('/api/products', async (req, res) => {
     try {
@@ -38,6 +45,10 @@ app.post('/api/orders', async (req, res) => {
             'INSERT INTO orders (id, user_id, shipping_name, shipping_address, shipping_phone, total, items, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [id, userId, shippingName, shippingAddress, shippingPhone, total, JSON.stringify(items), 'pending']
         );
+
+        // Send WhatsApp confirmation
+        sendWhatsApp(shippingPhone, shippingName, shippingAddress, items, id);
+
         res.status(201).json({ message: 'Order created' });
     } catch (err) {
         console.error(err);
@@ -77,6 +88,13 @@ app.patch('/api/orders/:id/status', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Failed to update order' });
     }
+});
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../../dist')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../dist/index.html'));
 });
 
 app.listen(port, () => {
