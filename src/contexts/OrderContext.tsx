@@ -13,6 +13,10 @@ export interface Order {
   shippingAddress: string;
   shippingName: string;
   shippingPhone: string;
+  phone?: string;
+  product_name?: string;
+  size?: string;
+  address?: string;
   createdAt: string;
 }
 
@@ -52,6 +56,10 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       shippingName: order.shippingName,
       shippingAddress: order.shippingAddress,
       shippingPhone: order.shippingPhone,
+      phone: order.phone,
+      product_name: order.product_name,
+      size: order.size,
+      address: order.address,
       items: order.items,
       total: order.total,
       userId: order.userId

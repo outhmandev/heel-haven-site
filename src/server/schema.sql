@@ -15,6 +15,10 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS orders (
   id VARCHAR(36) PRIMARY KEY,
   user_id VARCHAR(36) NOT NULL,
+  phone VARCHAR(20),
+  product_name VARCHAR(255),
+  size VARCHAR(50),
+  address TEXT,
   shipping_name VARCHAR(255) NOT NULL,
   shipping_address TEXT NOT NULL,
   shipping_phone VARCHAR(20) NOT NULL,

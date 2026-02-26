@@ -39,11 +39,11 @@ app.get('/api/products/:id', async (req, res) => {
 
 // Create Order
 app.post('/api/orders', async (req, res) => {
-    const { id, userId, shippingName, shippingAddress, shippingPhone, total, items } = req.body;
+    const { id, userId, shippingName, shippingAddress, shippingPhone, total, items, phone, product_name, size, address } = req.body;
     try {
         await pool.query(
-            'INSERT INTO orders (id, user_id, shipping_name, shipping_address, shipping_phone, total, items, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, userId, shippingName, shippingAddress, shippingPhone, total, JSON.stringify(items), 'pending']
+            'INSERT INTO orders (id, user_id, phone, product_name, size, address, shipping_name, shipping_address, shipping_phone, total, items, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, userId, phone || null, product_name || null, size || null, address || null, shippingName, shippingAddress, shippingPhone, total, JSON.stringify(items), 'pending']
         );
 
         // Send WhatsApp confirmation
@@ -63,6 +63,10 @@ app.get('/api/orders', async (req, res) => {
         const orders = rows.map(row => ({
             ...row,
             userId: row.user_id,
+            phone: row.phone,
+            product_name: row.product_name,
+            size: row.size,
+            address: row.address,
             shippingName: row.shipping_name,
             shippingAddress: row.shipping_address,
             shippingPhone: row.shipping_phone,

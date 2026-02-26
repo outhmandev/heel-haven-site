@@ -57,13 +57,21 @@ export default function CheckoutPage() {
     try {
       const fullAddress = `${address}, ${neighborhood}, ${selectedCity}`;
 
+      // Flatten items for legacy/new schema tracking
+      const productNames = items.map(i => i.name).join(', ');
+      const sizes = items.map(i => i.size).join(', ');
+
       await placeOrder({
         userId: user.id,
         items: [...items],
         total,
         shippingName: name,
         shippingPhone: phone,
-        shippingAddress: fullAddress
+        shippingAddress: fullAddress,
+        phone: phone,
+        product_name: productNames,
+        size: sizes,
+        address: fullAddress
       });
       clearCart();
       toast.success('Order placed successfully! Cash on delivery.');
