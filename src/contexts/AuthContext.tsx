@@ -10,10 +10,15 @@ export interface User {
   address?: string;
 }
 
+interface AuthResponse {
+  success: boolean;
+  message?: string;
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  register: (email: string, password: string, name: string) => Promise<AuthResponse>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
   isAdmin: boolean;
@@ -52,23 +57,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       const resp = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      if (!resp.ok) return false;
-      const userData = await resp.json();
-      setUser(userData);
-      return true;
+      const data = await resp.json();
+      if (!resp.ok) return { success: false, message: data.error || 'Login failed' };
+      setUser(data);
+      return { success: true };
     } catch {
-      return false;
+      return { success: false, message: 'Network error occurred' };
     }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (email: string, password: string, name: string): Promise<AuthResponse> => {
     try {
       const newUser = { id: crypto.randomUUID(), email, password, name };
       const resp = await fetch(`${API_BASE_URL}/api/auth/register`, {
@@ -76,13 +81,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUser)
       });
-      if (!resp.ok) return false;
+      const data = await resp.json();
+      if (!resp.ok) return { success: false, message: data.error || 'Registration failed' };
 
       const { password: _, ...userData } = { ...newUser, role: 'user' as const };
       setUser(userData);
-      return true;
+      return { success: true };
     } catch {
-      return false;
+      return { success: false, message: 'Network error occurred' };
     }
   };
 

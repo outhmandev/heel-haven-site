@@ -19,14 +19,14 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      const ok = await login(email, password);
-      if (ok) { toast.success('Welcome back!'); navigate('/'); }
-      else toast.error('Invalid credentials');
+      const response = await login(email, password);
+      if (response.success) { toast.success('Welcome back!'); navigate('/'); }
+      else toast.error(response.message || 'Invalid credentials');
     } else {
       if (!name) { toast.error('Please enter your name'); return; }
-      const ok = await register(email, password, name);
-      if (ok) { toast.success('Account created!'); navigate('/'); }
-      else toast.error('Email already exists');
+      const response = await register(email, password, name);
+      if (response.success) { toast.success('Account created!'); navigate('/'); }
+      else toast.error(response.message || 'Error occurred');
     }
   };
 
