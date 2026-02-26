@@ -97,7 +97,8 @@ app.patch('/api/orders/:id/status', async (req, res) => {
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../../dist')));
 
-app.get(/.*/, (req, res) => {
+// Catch-all route to serve the React app for non-API requests (must be the LAST route!)
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../../dist/index.html'));
 });
 
