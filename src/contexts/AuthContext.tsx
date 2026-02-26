@@ -64,12 +64,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await resp.json();
+
+      let data;
+      const textVal = await resp.text();
+      try {
+        data = JSON.parse(textVal);
+      } catch (err) {
+        console.error("Non-JSON Response received:", textVal);
+        return { success: false, message: 'Server returned invalid data format' };
+      }
+
       if (!resp.ok) return { success: false, message: data.error || 'Login failed' };
       setUser(data);
       return { success: true };
-    } catch {
-      return { success: false, message: 'Network error occurred' };
+    } catch (err) {
+      console.error("Login fetch error:", err);
+      return { success: false, message: 'Network error occurred. Check browser console.' };
     }
   };
 
@@ -81,14 +91,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUser)
       });
-      const data = await resp.json();
+
+      let data;
+      const textVal = await resp.text();
+      try {
+        data = JSON.parse(textVal);
+      } catch (err) {
+        console.error("Non-JSON Response received:", textVal);
+        return { success: false, message: 'Server returned invalid data format' };
+      }
+
       if (!resp.ok) return { success: false, message: data.error || 'Registration failed' };
 
       const { password: _, ...userData } = { ...newUser, role: 'user' as const };
       setUser(userData);
       return { success: true };
-    } catch {
-      return { success: false, message: 'Network error occurred' };
+    } catch (err) {
+      console.error("Register fetch error:", err);
+      return { success: false, message: 'Network error occurred. Check browser console.' };
     }
   };
 
