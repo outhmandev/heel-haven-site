@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -11,8 +12,8 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => boolean;
-  register: (email: string, password: string, name: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
   isAdmin: boolean;
@@ -49,26 +50,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem(CURRENT_USER_KEY);
   }, [user]);
 
-  const login = (email: string, password: string): boolean => {
-    const users = getUsers();
-    const found = users.find(u => u.email === email && u.password === password);
-    if (found) {
-      const { password: _, ...userData } = found;
+
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const resp = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (!resp.ok) return false;
+      const userData = await resp.json();
       setUser(userData);
       return true;
+    } catch {
+      return false;
     }
-    return false;
   };
 
-  const register = (email: string, password: string, name: string): boolean => {
-    const users = getUsers();
-    if (users.find(u => u.email === email)) return false;
-    const newUser = { id: crypto.randomUUID(), email, password, name, role: 'user' as const };
-    users.push(newUser);
-    saveUsers(users);
-    const { password: _, ...userData } = newUser;
-    setUser(userData);
-    return true;
+  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+    try {
+      const newUser = { id: crypto.randomUUID(), email, password, name };
+      const resp = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      });
+      if (!resp.ok) return false;
+
+      const { password: _, ...userData } = { ...newUser, role: 'user' as const };
+      setUser(userData);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const logout = () => setUser(null);

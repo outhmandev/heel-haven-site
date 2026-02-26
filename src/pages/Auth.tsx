@@ -16,15 +16,15 @@ export default function AuthPage() {
 
   if (user) { navigate('/profile'); return null; }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      const ok = login(email, password);
+      const ok = await login(email, password);
       if (ok) { toast.success('Welcome back!'); navigate('/'); }
       else toast.error('Invalid credentials');
     } else {
       if (!name) { toast.error('Please enter your name'); return; }
-      const ok = register(email, password, name);
+      const ok = await register(email, password, name);
       if (ok) { toast.success('Account created!'); navigate('/'); }
       else toast.error('Email already exists');
     }

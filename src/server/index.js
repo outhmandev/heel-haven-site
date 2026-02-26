@@ -16,6 +16,43 @@ app.use(express.json());
 // Initialize Webhook Routes
 setupWebhook(app, pool);
 
+// --- Auth Routes ---
+app.post('/api/auth/register', async (req, res) => {
+    const { id, email, password, name } = req.body;
+    try {
+        await pool.query(
+            'INSERT INTO users (id, email, password, name, role) VALUES (?, ?, ?, ?, ?)',
+            [id, email, password, name, 'user']
+        );
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (err) {
+        console.error(err);
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: 'Email already exists' });
+        }
+        res.status(500).json({ error: 'Failed to register user' });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const [rows] = await pool.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password]);
+        if (rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const user = rows[0];
+        // Strip password before returning
+        delete user.password;
+
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to login' });
+    }
+});
+
 app.get('/api/products', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM products');
